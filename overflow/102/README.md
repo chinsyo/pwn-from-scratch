@@ -1,0 +1,4 @@
+- 添加GCC编译参数```-fno-stack-protector```关闭DEP
+- 添加GCC编译参数```-z execstack```关闭Stack Protector
+- 执行```sudo -s; echo 0 > /proc/sys/kernel/randomize_va_space```关闭ASLR
+- 挂载GDB会影响内存的布局，先制造SEGFAULT再通过coredump文件获取地址信息
