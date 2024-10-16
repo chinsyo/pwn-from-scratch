@@ -1,0 +1,12 @@
+- objdump查看反汇编，发现main函数调用了危险函数gets
+- 观察上下文或通过nm查看可利用的函数调用，发现了system
+- objdump默认反汇编无法查看system压栈参数的字面量，仅能看到地址
+- 经过尝试在没有运行到对应代码片段时无法使用gdb命令打印字面量
+- 检查压栈地址，通过readelf -S 命令的输出观察Addr列的值，找到压栈参数地址位于.rodata
+- objdump -s -j .rodata 输出对应端的数据，找到对应参数为 /bin/sh
+- 查看system("/bin/sh")所在函数secure，存在 jne 分支判断
+- 将target设定为jne判断之后，绕开jne的分支判断
+- 在gets处下断点，检查 ESP 和 EBP。
+- 此处需要注意，EBP关注地址即可，而ESP则需要关注刚刚压入栈顶的字符串地址。
+- 即 ```x $ebp```和```x/4a $esp```的区别。两者相减得到差值为0x6c，即gets的输入距离EBP为0x6c
+- 额外覆写4字节的EBP内容和4字节的返回地址。最终payload长度116（和触发SEGFAULT最小输入112）相匹配
